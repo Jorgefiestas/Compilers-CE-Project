@@ -1,0 +1,8 @@
+*.swp
+
+*.yy*
+*.tab*
+
+*.yy.o
+*.output
+*.exe

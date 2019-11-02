@@ -1,0 +1,14 @@
+entero gcd(entero x, entero y){
+	si (y == 0){
+		retorno x;
+	}
+
+	retorno gcd(y, x - x/y);
+}
+
+entero main(){
+	entero x
+	entero y
+
+	retorno 0;
+}
