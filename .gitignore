@@ -6,3 +6,9 @@
 *.yy.o
 *.output
 *.exe
+
+*.hpp
+
+tokens.cpp
+parser.cpp
+parser
