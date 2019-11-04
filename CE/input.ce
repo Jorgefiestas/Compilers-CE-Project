@@ -7,8 +7,8 @@ entero gcd(entero x, entero y){
 }
 
 entero main(){
-	entero x
-	entero y
+	entero x;
+	entero y;
 
 	retorno 0;
 }

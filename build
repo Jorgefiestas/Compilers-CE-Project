@@ -1,5 +1,0 @@
-bison -y -d -v ce.y
-flex ce.lex
-gcc -c y.tab.c lex.yy.c
-gcc y.tab.o lex.yy.o -o ce.exe
-
