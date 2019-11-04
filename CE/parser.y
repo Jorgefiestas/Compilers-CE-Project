@@ -3,9 +3,9 @@
 	#include "node.h"
 	
 	int yylex(void);
-	void yyerror(char *);
+	Bloque *bloquePrograma = nullptr;
 
-	Bloque *bloquePrograma;
+	void yyerror(const char *s) { printf("ERROR: %sn", s); }
 %}
 
 %union {
@@ -24,7 +24,7 @@
 
 %token <string> ID
 %token <numero> NUM
-%token <token> INT VOID
+%token <token> INT VOID INPUT OUTPUT
 %token <token> RETORNO SI SINO MIENTRAS
 %token <token> ASSIGN MULOP DIVOP ADDOP MINOP
 %token <token> TCEQ TCNE TCLT TCLE TCGT TCGE
@@ -36,8 +36,8 @@
 %type <exprvec> lista_arg
 %type <decl_var> param
 %type <bloque> programa lista_declaracion sent_compuesta declaracion_local lista_sentencias
-%type <sent> declaracion var_declaracion fun_declaracion sentencia sentencia_expresion sentencia_seleccion sentencia_iteracion sentencia_retorno
-%type <token> tipo addop mulop comp
+%type <sent> declaracion var_declaracion fun_declaracion sentencia sentencia_expresion sentencia_seleccion sentencia_iteracion sentencia_retorno sentencia_io
+%type <token> tipo addop mulop comp io
 
 %locations
 
@@ -48,8 +48,8 @@ programa:
 	;
 
 lista_declaracion:
-	declaracion lista_declaracion { $2->sentencias.push_back($1); }
-	| declaracion { $$ = new Bloque(); $$->sentencias.push_back($1); }
+	declaracion { $$ = new Bloque(); $$->sentencias.push_back($1); }
+	| lista_declaracion declaracion { $1->sentencias.push_back($2); }
 	;
 
 declaracion:
@@ -67,13 +67,13 @@ fun_declaracion:
 	;
 
 params:
-	lista_params
+	lista_params { $$ = $1; }
 	| { $$ = new Variables(); }
 	;
 
 lista_params:
-	param {$$ = new Variables(); $$->push_back($1); }
-	| param COMMA lista_params { $3->push_back($1); }
+	param { $$ = new Variables(); $$->push_back($1); }
+	| lista_params COMMA param { $1->push_back($3); }
 	;
 
 param:
@@ -91,13 +91,13 @@ sent_compuesta:
 	;
 
 declaracion_local:
-	declaracion_local var_declaracion { $1->sentencias.push_back($2); }
-	| { $$ = new Bloque(); } 
+	{ $$ = new Bloque(); } 
+	|declaracion_local var_declaracion { $1->sentencias.push_back($2); }
 	;
 
 lista_sentencias:
-	lista_sentencias sentencia { $1->sentencias.push_back($2); } 
-	| { $$ = new Bloque(); }
+	{ $$ = new Bloque(); }
+	| lista_sentencias sentencia { $1->sentencias.push_back($2); } 
 	;
 
 sentencia:
@@ -105,6 +105,7 @@ sentencia:
 	| sentencia_seleccion
 	| sentencia_iteracion
 	| sentencia_retorno
+	| sentencia_io
 	;
 
 sentencia_expresion:
@@ -124,6 +125,14 @@ sentencia_retorno:
 	RETORNO SEMI { $$ = new SentenciaRetorno(); }
 	| RETORNO expresion SEMI { $$ = new SentenciaRetorno($2); }
 	;
+
+sentencia_io:
+	io LPAREN expresion RPAREN SEMI { $$ = new SentenciaIO($1, $3); }
+	;
+
+io:
+  INPUT
+  | OUTPUT;
 
 expresion:
 	var ASSIGN expresion { $$ = new Asignacion($1, $3); }
@@ -155,8 +164,8 @@ comp:
 	;
 
 expresion_aditiva:
-	term addop expresion_aditiva { $$ = new OperadorBinario($1, $2, $3); }
-	| term
+	term
+	| expresion_aditiva addop term { $$ = new OperadorBinario($1, $2, $3); }
 	;
 
 addop:
@@ -165,8 +174,8 @@ addop:
 	 ;
 
 term:
-	term mulop factor { $$ = new OperadorBinario($1, $2, $3); }
-	| factor
+	factor
+	| term mulop factor { $$ = new OperadorBinario($1, $2, $3); }
 	;
 
 mulop:
@@ -183,17 +192,12 @@ factor:
 
 call:
 	ident LPAREN lista_arg RPAREN { $$ = new LlamadaMetodo($1, *$3); } 
+	| ident LPAREN RPAREN { $$ = new LlamadaMetodo($1); } 
 	;
 
 lista_arg:
-	expresion COMMA lista_arg { $3->push_back($1); }
-	| expresion { $$ = new Expresiones(); $$->push_back($1); }
-	| { $$ = new Expresiones(); }
+	expresion { $$ = new Expresiones(); $$->push_back($1); }
+	| lista_arg COMMA expresion { $1->push_back($3); }
 	;
 
 %%
-
-extern int yylineno, yychar;
-void yyerror(char *s) {
-	fprintf(stderr, "%s: %d, %d\n", s, yychar, yylineno);
-}

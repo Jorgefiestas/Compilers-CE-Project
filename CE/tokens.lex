@@ -4,7 +4,6 @@
 #include "parser.hpp"
 #define TOKEN(t) (yylval.token = t)
 
-void yyerror(char *);
 
 %}
 
@@ -37,6 +36,14 @@ void yyerror(char *);
 
 "retorno" {
 	return TOKEN(RETORNO);
+	}
+
+"input" {
+	return TOKEN(INPUT);
+	}
+
+"output" {
+	return TOKEN(OUTPUT);
 	}
 
 [0-9]+ {
@@ -76,7 +83,7 @@ void yyerror(char *);
 
 [ \t] ; /* skip whitespace */
 
-. yyerror("invalid character"); // demas errores
+. printf("invalid character"); // demas errores
 
 %%
 

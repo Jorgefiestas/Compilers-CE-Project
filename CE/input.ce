@@ -1,14 +1,25 @@
 entero gcd(entero x, entero y){
-	si (y == 0){
-		retorno x;
+	entero res;
+
+	si (x < y) {
+		retorno gcd(y, x);
 	}
 
-	retorno gcd(y, x - x/y);
+	si (y == 0) {
+		retorno x;
+	}
+	
+	res = y - x/y;
+	retorno gcd(y, res);
 }
 
 entero main(){
 	entero x;
 	entero y;
 
+	input(x);
+	input(y);
+
+	output(gcd(x, y));
 	retorno 0;
 }
