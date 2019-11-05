@@ -9,7 +9,7 @@ entero gcd(entero x, entero y){
 		retorno x;
 	}
 	
-	res = y - x/y;
+	res = x - y * (x/y);
 	retorno gcd(y, res);
 }
 
